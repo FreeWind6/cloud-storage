@@ -109,7 +109,7 @@ public class CloudPanelController implements Initializable {
             out = new DataOutputStream(socket.getOutputStream());
             updateList();
 
-            new Thread(new Runnable() {
+            /*new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -148,7 +148,7 @@ public class CloudPanelController implements Initializable {
                         }
                     }
                 }
-            }).start();
+            }).start();*/
         } catch (IOException e) {
             e.printStackTrace();
         }

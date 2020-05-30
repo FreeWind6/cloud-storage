@@ -26,13 +26,13 @@ public class Handler {
                         while (true) {
                             String str = in.readUTF();
                             if (str.equals("/path")) {
-                                Path path = Paths.get("D:\\");
+                                Path path = Paths.get(".");
                                 out.writeUTF(path.normalize().toAbsolutePath().toString());
                                 out.flush();
                             }
 
                             if (str.equals("/updateList")) {
-                                List<FileInfo> collect = Files.list(Paths.get("D:\\")).map(FileInfo::new).collect(Collectors.toList());
+                                List<FileInfo> collect = Files.list(Paths.get(".")).map(FileInfo::new).collect(Collectors.toList());
                                 out.writeObject(collect);
                                 out.flush();
                             }
@@ -43,7 +43,7 @@ public class Handler {
                             }
 
                             if (str.startsWith("/download")) {
-                                String[] s = str.split(" ");
+                                String[] s = str.split(" ", 2);
                                 String filename = s[1];
                                 long length = in.readLong();
                                 File file = new File(filename);
@@ -55,6 +55,23 @@ public class Handler {
                                     fos.write(in.read());
                                 }
                                 fos.close();
+                                System.out.println("File: " + filename + ", downloaded!");
+                            }
+
+                            if (str.startsWith("/putMy")) {
+                                String[] s = str.split(" ", 2);
+                                String filename = s[1];
+                                File file = new File(filename);
+                                long s1 = file.length();
+                                out.writeUTF("/size " + s1);
+                                out.writeUTF(file.getName());
+                                FileInputStream fileInputStream = new FileInputStream(file);
+                                int x;
+                                while ((x = fileInputStream.read()) != -1) {
+                                    out.write(x);
+                                    out.flush();
+                                }
+                                System.out.println("File: " + filename + ", downloaded!");
                             }
 //                            if (str.startsWith("/openFolder")) {
 //                                String[] s = str.split(" ");

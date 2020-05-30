@@ -5,6 +5,9 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.VBox;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,9 +21,9 @@ public class Controller {
         Platform.exit();
     }
 
-    public void copyBtnAction(ActionEvent actionEvent) {
-        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrl");
-        PanelController rightPC = (PanelController) rightPanel.getProperties().get("ctrl");
+    public void copyBtnAction(ActionEvent actionEvent) throws IOException {
+        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
+        CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
 
         if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
@@ -28,29 +31,57 @@ public class Controller {
             return;
         }
 
-        PanelController srcPC = null, dstPC = null;
+        //→
         if (leftPC.getSelectedFilename() != null) {
-            srcPC = leftPC;
-            dstPC = rightPC;
+            Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
+            try {
+                rightPC.out.writeUTF("/download " + leftPC.getSelectedFilename());
+                File file = new File(srcPath.toAbsolutePath().toString());
+                rightPC.out.writeLong(file.length());
+                FileInputStream fileInputStream = new FileInputStream(file);
+                int x;
+                while ((x = fileInputStream.read()) != -1) {
+                    rightPC.out.write(x);
+                    rightPC.out.flush();
+                }
+                System.out.println("File: " + leftPC.getSelectedFilename() + ", downloaded!");
+                //обновить
+                rightPC.connect();
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось скопировать указанный файл", ButtonType.OK);
+                alert.showAndWait();
+            }
         }
+        //←
         if (rightPC.getSelectedFilename() != null) {
-            srcPC = rightPC;
-            dstPC = leftPC;
+            Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
+            String s = srcPath.toAbsolutePath().toString();
+            rightPC.out.writeUTF("/putMy " + s);
+            String readUTF = rightPC.in.readUTF();
+            String[] s1 = null;
+            if (readUTF.startsWith("/size")) {
+                s1 = readUTF.split(" ", 2);
+            }
+            long length = Long.parseLong(s1[1]);
+
+            File file = new File(rightPC.getSelectedFilename());
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            FileOutputStream fos = new FileOutputStream(file);
+            for (long i = 0; i < length; i++) {
+                fos.write(rightPC.in.read());
+            }
+            fos.close();
+            rightPC.connect();
+            leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+            System.out.println("File: " + file.getName() + ", downloaded!");
         }
 
-        Path srcPath = Paths.get(srcPC.getCurrentPath(), srcPC.getSelectedFilename());
-        Path dstPath = Paths.get(dstPC.getCurrentPath()).resolve(srcPath.getFileName().toString());
 
-        try {
-            Files.copy(srcPath, dstPath);
-            dstPC.updateList(Paths.get(dstPC.getCurrentPath()));
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось скопировать указанный файл", ButtonType.OK);
-            alert.showAndWait();
-        }
     }
 
-    public void moveBtnAction(ActionEvent actionEvent) {
+/*    public void moveBtnAction(ActionEvent actionEvent) {
         PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrl");
         PanelController rightPC = (PanelController) rightPanel.getProperties().get("ctrl");
 
@@ -82,7 +113,7 @@ public class Controller {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось переместить указанный файл", ButtonType.OK);
             alert.showAndWait();
         }
-    }
+    }*/
 
 /*    public void deleteBtnActionThis(ActionEvent actionEvent) {
         PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
@@ -130,6 +161,7 @@ public class Controller {
             Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
             String s = srcPath.toAbsolutePath().toString();
             rightPC.out.writeUTF("/delete " + s);
+            //обновить
             rightPC.connect();
         }
     }
