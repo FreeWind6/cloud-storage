@@ -34,10 +34,12 @@ public class Controller {
         //→
         if (leftPC.getSelectedFilename() != null) {
             Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
+            Path dstPath = Paths.get(rightPC.getCurrentPath());
             try {
                 rightPC.out.writeUTF("/download " + leftPC.getSelectedFilename());
                 File file = new File(srcPath.toAbsolutePath().toString());
                 rightPC.out.writeLong(file.length());
+                rightPC.out.writeUTF(dstPath.toAbsolutePath().toString());
                 FileInputStream fileInputStream = new FileInputStream(file);
                 int x;
                 while ((x = fileInputStream.read()) != -1) {
@@ -55,6 +57,7 @@ public class Controller {
         //←
         if (rightPC.getSelectedFilename() != null) {
             Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
+            Path leftPath = Paths.get(leftPC.getCurrentPath());
             String s = srcPath.toAbsolutePath().toString();
             rightPC.out.writeUTF("/putMy " + s);
             String readUTF = rightPC.in.readUTF();
@@ -64,7 +67,7 @@ public class Controller {
             }
             long length = Long.parseLong(s1[1]);
 
-            File file = new File(rightPC.getSelectedFilename());
+            File file = new File(leftPath.toAbsolutePath().toString(), rightPC.getSelectedFilename());
             if (!file.exists()) {
                 file.createNewFile();
             }

@@ -46,7 +46,8 @@ public class Handler {
                                 String[] s = str.split(" ", 2);
                                 String filename = s[1];
                                 long length = in.readLong();
-                                File file = new File("D:\\", filename);
+                                String path = in.readUTF();
+                                File file = new File(path, filename);
                                 if (!file.exists()) {
                                     file.createNewFile();
                                 }
