@@ -26,13 +26,13 @@ public class Handler {
                         while (true) {
                             String str = in.readUTF();
                             if (str.equals("/path")) {
-                                Path path = Paths.get(".");
+                                Path path = Paths.get("D:\\");
                                 out.writeUTF(path.normalize().toAbsolutePath().toString());
                                 out.flush();
                             }
 
                             if (str.equals("/updateList")) {
-                                List<FileInfo> collect = Files.list(Paths.get(".")).map(FileInfo::new).collect(Collectors.toList());
+                                List<FileInfo> collect = Files.list(Paths.get("D:\\")).map(FileInfo::new).collect(Collectors.toList());
                                 out.writeObject(collect);
                                 out.flush();
                             }
@@ -72,6 +72,15 @@ public class Handler {
                                     out.flush();
                                 }
                                 System.out.println("File: " + filename + ", downloaded!");
+                            }
+
+                            if (str.startsWith("/openFolder")) {
+                                String[] s = str.split(" ", 2);
+                                String path = s[1];
+                                List<FileInfo> collect = Files.list(Paths.get(path)).map(FileInfo::new).collect(Collectors.toList());
+                                out.writeObject(collect);
+                                out.flush();
+
                             }
 //                            if (str.startsWith("/openFolder")) {
 //                                String[] s = str.split(" ");

@@ -1,15 +1,20 @@
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.ResourceBundle;
@@ -68,7 +73,38 @@ public class CloudPanelController implements Initializable {
         filesTable.getColumns().addAll(fileTypeColumn, filenameColumn, fileSizeColumn, fileDateColumn);
         filesTable.getSortOrder().add(fileTypeColumn);
 
+        filesTable.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                if (event.getClickCount() == 2) {
+                    Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
+                    if (Files.isDirectory(path)) {
+                        System.out.println(path.toAbsolutePath().toString());
+                        try {
+                            out.writeUTF("/openFolder " + path.toAbsolutePath().toString());
+                            filesTable.getItems().clear();
+                            filesTable.getItems().addAll((Collection<? extends FileInfo>) in.readObject());
+                            filesTable.sort();
 
+                            pathField.setText(path.toAbsolutePath().toString());
+                        } catch (IOException | ClassNotFoundException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    public void btnPathUpActionCloud(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        Path upperPath = Paths.get(pathField.getText()).getParent();
+
+        out.writeUTF("/openFolder " + upperPath.toAbsolutePath().toString());
+        filesTable.getItems().clear();
+        filesTable.getItems().addAll((Collection<? extends FileInfo>) in.readObject());
+        filesTable.sort();
+
+        pathField.setText(upperPath.toAbsolutePath().toString());
     }
 
     public void updateList() {
@@ -157,4 +193,6 @@ public class CloudPanelController implements Initializable {
     public void btnConnect(ActionEvent actionEvent) {
         connect();
     }
+
+
 }
