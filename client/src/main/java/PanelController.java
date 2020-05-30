@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 
 import java.io.IOException;
 import java.net.URL;
@@ -26,6 +27,9 @@ public class PanelController implements Initializable {
 
     @FXML
     TextField pathField;
+
+    @FXML
+    VBox leftPanel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -121,5 +125,9 @@ public class PanelController implements Initializable {
 
     public String getCurrentPath() {
         return pathField.getText();
+    }
+
+    public void deleteBtnAction(ActionEvent actionEvent) {
+
     }
 }

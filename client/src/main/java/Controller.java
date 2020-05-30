@@ -84,9 +84,30 @@ public class Controller {
         }
     }
 
-    public void deleteBtnAction(ActionEvent actionEvent) {
-        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrl");
-        PanelController rightPC = (PanelController) rightPanel.getProperties().get("ctrl");
+/*    public void deleteBtnActionThis(ActionEvent actionEvent) {
+        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
+
+        if (leftPC.getSelectedFilename() == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+            alert.showAndWait();
+            return;
+        }
+
+        if (leftPC.getSelectedFilename() != null) {
+            try {
+                Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
+                Files.delete(srcPath);
+                leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось удалить указанный файл", ButtonType.OK);
+                alert.showAndWait();
+            }
+        }
+    }*/
+
+    public void deleteBtnActionUnion(ActionEvent actionEvent) throws IOException {
+        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
+        CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
 
         if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
@@ -94,26 +115,38 @@ public class Controller {
             return;
         }
 
-        PanelController srcPC = null, dstPC = null;
         if (leftPC.getSelectedFilename() != null) {
-            srcPC = leftPC;
-            dstPC = rightPC;
+            try {
+                Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
+                Files.delete(srcPath);
+                leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось удалить указанный файл", ButtonType.OK);
+                alert.showAndWait();
+            }
         }
+
         if (rightPC.getSelectedFilename() != null) {
-            srcPC = rightPC;
-            dstPC = leftPC;
-        }
-
-        Path srcPath = Paths.get(srcPC.getCurrentPath(), srcPC.getSelectedFilename());
-
-        try {
-            Files.delete(srcPath);
-            srcPC.updateList(Paths.get(srcPC.getCurrentPath()));
-            dstPC.updateList(Paths.get(dstPC.getCurrentPath()));
-
-        } catch (IOException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось удалить указанный файл", ButtonType.OK);
-            alert.showAndWait();
+            Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
+            String s = srcPath.toAbsolutePath().toString();
+            rightPC.out.writeUTF("/delete " + s);
+            rightPC.connect();
         }
     }
+
+/*    public void deleteBtnActionCloud(ActionEvent actionEvent) throws IOException {
+        CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
+        if (rightPC.getSelectedFilename() == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+            alert.showAndWait();
+            return;
+        }
+
+        if (rightPC.getSelectedFilename() != null) {
+            Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
+            String s = srcPath.toAbsolutePath().toString();
+            rightPC.out.writeUTF("/delete " + s);
+            rightPC.connect();
+        }
+    }*/
 }

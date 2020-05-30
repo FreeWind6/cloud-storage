@@ -1,15 +1,14 @@
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Handler {
     private Socket socket;
-    ObjectInputStream in;
+    private DataInputStream in;
     private ObjectOutputStream out;
     private ServerMain server;
 
@@ -17,7 +16,7 @@ public class Handler {
         try {
             this.socket = socket;
             this.server = server;
-//            this.in = new ObjectInputStream(socket.getInputStream());
+            this.in = new DataInputStream(socket.getInputStream());
             this.out = new ObjectOutputStream(socket.getOutputStream());
 
             new Thread(new Runnable() {
@@ -25,38 +24,55 @@ public class Handler {
                 public void run() {
                     try {
                         while (true) {
-                            System.out.println("/updatelist");
-                            List<FileInfo> collect = Files.list(Paths.get(".")).map(FileInfo::new).collect(Collectors.toList());
-                            out.writeObject(collect);
-                            out.flush();
                             String str = in.readUTF();
-//                            if (str.startsWith("/auth")) {
-//
-                            break;
+                            if (str.equals("/path")) {
+                                Path path = Paths.get("D:\\");
+                                out.writeUTF(path.normalize().toAbsolutePath().toString());
+                                out.flush();
+                            }
+
+                            if (str.equals("/updateList")) {
+                                List<FileInfo> collect = Files.list(Paths.get("D:\\")).map(FileInfo::new).collect(Collectors.toList());
+                                out.writeObject(collect);
+                                out.flush();
+                            }
+
+                            if (str.startsWith("/delete")) {
+                                String[] s = str.split(" ", 2);
+                                Files.delete(Paths.get(s[1]));
+                            }
+
+                            if (str.startsWith("/download")) {
+                                String[] s = str.split(" ");
+                                String filename = s[1];
+                                long length = in.readLong();
+                                File file = new File(filename);
+                                if (!file.exists()) {
+                                    file.createNewFile();
+                                }
+                                FileOutputStream fos = new FileOutputStream(file);
+                                for (long i = 0; i < length; i++) {
+                                    fos.write(in.read());
+                                }
+                                fos.close();
+                            }
+//                            if (str.startsWith("/openFolder")) {
+//                                String[] s = str.split(" ");
+//                                String pathMy = s[1];
+//                                Path path = Paths.get(".", pathMy);
+//                                List<FileInfo> collect = Files.list(Paths.get(pathMy)).map(FileInfo::new).collect(Collectors.toList());
+//                                out.writeObject(collect);
+//                                out.flush();
 //                            }
                         }
-
-//                        while (true) {
-//                            String str = in.readUTF();
-//                            if (str.startsWith("/")) {
-//                                if (str.equals("/end")) {
-//
-//                                    break;
-//                                }
-//
-//                                if (str.startsWith("/blacklist ")) {
-//
-//                                }
-//                            }
-//                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
-//                        try {
-//                            in.close();
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
+                        try {
+                            in.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                         try {
                             out.close();
                         } catch (IOException e) {

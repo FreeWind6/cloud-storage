@@ -12,7 +12,6 @@ public class ServerMain {
             server = new ServerSocket(8189);
             while (true) {
                 socket = server.accept();
-                System.out.println("Client accept");
                 new Handler(this, socket);
             }
 
