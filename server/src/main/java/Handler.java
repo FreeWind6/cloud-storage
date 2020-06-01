@@ -74,6 +74,7 @@ public class Handler {
                                     out.write(x);
                                     out.flush();
                                 }
+                                fileInputStream.close();
                                 System.out.println("File: " + filename + ", downloaded!");
                             }
 

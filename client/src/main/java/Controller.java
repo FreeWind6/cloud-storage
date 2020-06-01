@@ -50,7 +50,7 @@ public class Controller {
                     rightPC.out.flush();
                 }
                 System.out.println("File: " + leftPC.getSelectedFilename() + ", downloaded!");
-
+                fileInputStream.close();
                 //обновить
                 update(rightPC, currentPath);
                 leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
