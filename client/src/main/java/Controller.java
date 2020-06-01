@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -105,10 +104,11 @@ public class Controller {
         if (leftPC.getSelectedFilename() != null) {
             try {
                 Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
-                Files.delete(srcPath);
+                //удаление всего
+                new Controller().deleteFolder(new File(srcPath.toAbsolutePath().toString()));
                 leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
-            } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось удалить указанный файл", ButtonType.OK);
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка удаления!", ButtonType.OK);
                 alert.showAndWait();
             }
         }
@@ -124,7 +124,27 @@ public class Controller {
         }
     }
 
-    private void update(CloudPanelController rightPC, String currentPath){
+    /**
+     * Метод для полного удаления папки вместе с содержимым
+     */
+    private void deleteFolder(final File file) {
+//        System.out.println("Удaляem фaйл: " + file.getAbsolutePath());
+        if (file.isDirectory()) {
+            String[] files = file.list();
+            if ((null == files) || (files.length == 0)) {
+                file.delete();
+            } else {
+                for (final String filename : files) {
+                    deleteFolder(new File(file.getAbsolutePath() + File.separator + filename));
+                }
+                file.delete();
+            }
+        } else {
+            file.delete();
+        }
+    }
+
+    private void update(CloudPanelController rightPC, String currentPath) {
         try {
             rightPC.out.writeUTF("/openFolder " + currentPath);
         } catch (IOException e) {

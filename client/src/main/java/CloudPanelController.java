@@ -187,6 +187,8 @@ public class CloudPanelController implements Initializable {
             }).start();*/
         } catch (IOException e) {
             e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            alert.showAndWait();
         }
     }
 

@@ -39,9 +39,7 @@ public class Handler {
 
                             if (str.startsWith("/delete")) {
                                 String[] s = str.split(" ", 2);
-                                System.out.println(Files.exists(Paths.get(s[1])));
-                                System.out.println(Paths.get(s[1]));
-                                Files.delete(Paths.get(s[1]));
+                                delete(new File(s[1]));
                             }
 
                             if (str.startsWith("/download")) {
@@ -104,6 +102,25 @@ public class Handler {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
+                    }
+                }
+
+                /**
+                 * Метод для полного удаления папки вместе с содержимым
+                 */
+                private void delete(final File file) {
+                    if (file.isDirectory()) {
+                        String[] files = file.list();
+                        if ((null == files) || (files.length == 0)) {
+                            file.delete();
+                        } else {
+                            for (final String filename : files) {
+                                delete(new File(file.getAbsolutePath() + File.separator + filename));
+                            }
+                            file.delete();
+                        }
+                    } else {
+                        file.delete();
                     }
                 }
             }).start();
