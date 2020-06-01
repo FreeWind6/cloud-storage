@@ -127,13 +127,19 @@ public class Controller {
         }
     }
 
-    private void update(CloudPanelController rightPC, String currentPath) throws IOException {
-        rightPC.out.writeUTF("/openFolder " + currentPath);
+    private void update(CloudPanelController rightPC, String currentPath){
+        try {
+            rightPC.out.writeUTF("/openFolder " + currentPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         rightPC.filesTable.getItems().clear();
         try {
             rightPC.filesTable.getItems().addAll((Collection<? extends FileInfo>) rightPC.in.readObject());
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | IOException e) {
             e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.WARNING, "По какой-то причине не удалось обновить список файлов", ButtonType.OK);
+            alert.showAndWait();
         }
         rightPC.filesTable.sort();
 
