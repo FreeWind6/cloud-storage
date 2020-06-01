@@ -39,6 +39,8 @@ public class Handler {
 
                             if (str.startsWith("/delete")) {
                                 String[] s = str.split(" ", 2);
+                                System.out.println(Files.exists(Paths.get(s[1])));
+                                System.out.println(Paths.get(s[1]));
                                 Files.delete(Paths.get(s[1]));
                             }
 
@@ -83,14 +85,6 @@ public class Handler {
                                 out.flush();
 
                             }
-//                            if (str.startsWith("/openFolder")) {
-//                                String[] s = str.split(" ");
-//                                String pathMy = s[1];
-//                                Path path = Paths.get(".", pathMy);
-//                                List<FileInfo> collect = Files.list(Paths.get(pathMy)).map(FileInfo::new).collect(Collectors.toList());
-//                                out.writeObject(collect);
-//                                out.flush();
-//                            }
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
