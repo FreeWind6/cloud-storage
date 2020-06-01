@@ -67,7 +67,6 @@ public class Handler {
                                 File file = new File(filename);
                                 long s1 = file.length();
                                 out.writeUTF("/size " + s1);
-                                out.writeUTF(file.getName());
                                 FileInputStream fileInputStream = new FileInputStream(file);
                                 int x;
                                 while ((x = fileInputStream.read()) != -1) {

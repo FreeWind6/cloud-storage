@@ -64,7 +64,7 @@ public class Controller {
         if (rightPC.getSelectedFilename() != null) {
             Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
             Path leftPath = Paths.get(leftPC.getCurrentPath());
-//            String currentPath = rightPC.getCurrentPath();
+            String currentPath = rightPC.getCurrentPath();
             String s = srcPath.toAbsolutePath().toString();
             rightPC.out.writeUTF("/putMy " + s);
             String readUTF = rightPC.in.readUTF();
@@ -73,7 +73,6 @@ public class Controller {
                 s1 = readUTF.split(" ", 2);
             }
             long length = Long.parseLong(s1[1]);
-
             File file = new File(leftPath.toAbsolutePath().toString(), rightPC.getSelectedFilename());
             if (!file.exists()) {
                 file.createNewFile();
@@ -85,9 +84,7 @@ public class Controller {
             fos.close();
 
             //обновить
-//            rightPC.connect();
-//            update(rightPC, currentPath);
-
+            update(rightPC, currentPath);
             leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
             System.out.println("File: " + file.getName() + ", downloaded!");
         }
