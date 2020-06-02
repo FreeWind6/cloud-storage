@@ -25,6 +25,10 @@ public class Handler {
                     try {
                         while (true) {
                             String str = in.readUTF();
+                            if (str.equals("/end")) {
+                                break;
+                            }
+
                             if (str.equals("/path")) {
                                 Path path = Paths.get("D:\\");
                                 out.writeUTF(path.normalize().toAbsolutePath().toString());

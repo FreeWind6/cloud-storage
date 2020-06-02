@@ -23,7 +23,13 @@ public class Controller {
     TextField nameFolder;
 
     public void btnExitAction(ActionEvent actionEvent) {
-        Platform.exit();
+        try {
+            CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
+            rightPC.out.writeUTF("/end");
+            Platform.exit();
+        } catch (Exception e) {
+//            e.printStackTrace();
+        }
     }
 
     public void copyBtnAction(ActionEvent actionEvent) throws IOException {
