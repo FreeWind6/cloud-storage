@@ -29,6 +29,7 @@ public class CloudPanelController implements Initializable {
     ObjectInputStream in;
     DataOutputStream out;
     Socket socket;
+    Boolean connect;
 
     final String IP_ADPRESS = "localhost";
     final int PORT = 8189;
@@ -142,6 +143,7 @@ public class CloudPanelController implements Initializable {
             in = new ObjectInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
             startList();
+            connect = true;
 
             /*new Thread(new Runnable() {
                 @Override
@@ -184,7 +186,6 @@ public class CloudPanelController implements Initializable {
                 }
             }).start();*/
         } catch (IOException e) {
-            e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
             alert.showAndWait();
         }

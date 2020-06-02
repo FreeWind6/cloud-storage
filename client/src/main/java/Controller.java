@@ -29,82 +29,90 @@ public class Controller {
     public void copyBtnAction(ActionEvent actionEvent) throws IOException {
         PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
         CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
-
         try {
-            if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
-                alert.showAndWait();
-                return;
+            if (rightPC.connect) {
+                try {
+                    if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+                        alert.showAndWait();
+                        return;
+                    }
+                } catch (Exception e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+                    alert.showAndWait();
+                    return;
+                }
+
+                //→
+                if (leftPC.getSelectedFilename() != null) {
+                    Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
+                    Path dstPath = Paths.get(rightPC.getCurrentPath());
+                    String currentPath = rightPC.getCurrentPath();
+
+                    try {
+                        if (!Files.isDirectory(srcPath)) {
+                            rightPC.out.writeUTF("/download " + leftPC.getSelectedFilename());
+                            File file = new File(srcPath.toAbsolutePath().toString());
+                            rightPC.out.writeLong(file.length());
+                            rightPC.out.writeUTF(dstPath.toAbsolutePath().toString());
+                            FileInputStream fileInputStream = new FileInputStream(file);
+                            int x;
+                            while ((x = fileInputStream.read()) != -1) {
+                                rightPC.out.write(x);
+                                rightPC.out.flush();
+                            }
+                            System.out.println("File: " + leftPC.getSelectedFilename() + ", downloaded!");
+                            fileInputStream.close();
+                            //обновить
+                            update(rightPC, currentPath);
+                            leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+                        } else {
+                            Alert alert = new Alert(Alert.AlertType.ERROR, "Выбрана не папка!", ButtonType.OK);
+                            alert.showAndWait();
+                        }
+                    } catch (IOException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось скопировать указанный файл", ButtonType.OK);
+                        alert.showAndWait();
+                    }
+                }
+                //←
+                if (rightPC.getSelectedFilename() != null) {
+                    Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
+                    Path leftPath = Paths.get(leftPC.getCurrentPath());
+                    String currentPath = rightPC.getCurrentPath();
+                    String s = srcPath.toAbsolutePath().toString();
+                    if (!Files.isDirectory(srcPath)) {
+                        rightPC.out.writeUTF("/putMy " + s);
+                        String readUTF = rightPC.in.readUTF();
+                        String[] s1 = null;
+                        if (readUTF.startsWith("/size")) {
+                            s1 = readUTF.split(" ", 2);
+                        }
+                        long length = Long.parseLong(s1[1]);
+                        File file = new File(leftPath.toAbsolutePath().toString(), rightPC.getSelectedFilename());
+                        if (!file.exists()) {
+                            file.createNewFile();
+                        }
+                        FileOutputStream fos = new FileOutputStream(file);
+                        for (long i = 0; i < length; i++) {
+                            fos.write(rightPC.in.read());
+                        }
+                        fos.close();
+
+                        //обновить
+                        update(rightPC, currentPath);
+                        leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+                        System.out.println("File: " + file.getName() + ", downloaded!");
+                    } else {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Выбрана не папка!", ButtonType.OK);
+                        alert.showAndWait();
+                    }
+                }
             }
-        } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+        } catch (NullPointerException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Соединение отсутствует!", ButtonType.OK);
             alert.showAndWait();
-            return;
         }
-
-        //→
-        if (leftPC.getSelectedFilename() != null) {
-            Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
-            Path dstPath = Paths.get(rightPC.getCurrentPath());
-            String currentPath = rightPC.getCurrentPath();
-
-            try {
-                rightPC.out.writeUTF("/download " + leftPC.getSelectedFilename());
-                File file = new File(srcPath.toAbsolutePath().toString());
-                rightPC.out.writeLong(file.length());
-                rightPC.out.writeUTF(dstPath.toAbsolutePath().toString());
-                FileInputStream fileInputStream = new FileInputStream(file);
-                int x;
-                while ((x = fileInputStream.read()) != -1) {
-                    rightPC.out.write(x);
-                    rightPC.out.flush();
-                }
-                System.out.println("File: " + leftPC.getSelectedFilename() + ", downloaded!");
-                fileInputStream.close();
-                //обновить
-                update(rightPC, currentPath);
-                leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
-
-            } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Не удалось скопировать указанный файл", ButtonType.OK);
-                alert.showAndWait();
-            }
-        }
-        //←
-        if (rightPC.getSelectedFilename() != null) {
-            Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
-            Path leftPath = Paths.get(leftPC.getCurrentPath());
-            String currentPath = rightPC.getCurrentPath();
-            String s = srcPath.toAbsolutePath().toString();
-            if (!Files.isDirectory(srcPath)) {
-                rightPC.out.writeUTF("/putMy " + s);
-                String readUTF = rightPC.in.readUTF();
-                String[] s1 = null;
-                if (readUTF.startsWith("/size")) {
-                    s1 = readUTF.split(" ", 2);
-                }
-                long length = Long.parseLong(s1[1]);
-                File file = new File(leftPath.toAbsolutePath().toString(), rightPC.getSelectedFilename());
-                if (!file.exists()) {
-                    file.createNewFile();
-                }
-                FileOutputStream fos = new FileOutputStream(file);
-                for (long i = 0; i < length; i++) {
-                    fos.write(rightPC.in.read());
-                }
-                fos.close();
-
-                //обновить
-                update(rightPC, currentPath);
-                leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
-                System.out.println("File: " + file.getName() + ", downloaded!");
-            } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Выбрана не папка!", ButtonType.OK);
-                alert.showAndWait();
-            }
-        }
-
-
     }
 
     public void deleteBtnActionUnion(ActionEvent actionEvent) throws IOException, InterruptedException {
@@ -112,7 +120,7 @@ public class Controller {
         CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
 
         if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран!", ButtonType.OK);
             alert.showAndWait();
             return;
         }
