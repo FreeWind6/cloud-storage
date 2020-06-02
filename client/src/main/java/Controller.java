@@ -67,7 +67,7 @@ public class Controller {
                             update(rightPC, currentPath);
                             leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
                         } else {
-                            Alert alert = new Alert(Alert.AlertType.ERROR, "Выбрана не папка!", ButtonType.OK);
+                            Alert alert = new Alert(Alert.AlertType.ERROR, "Выбран не файл!", ButtonType.OK);
                             alert.showAndWait();
                         }
                     } catch (IOException e) {
@@ -104,7 +104,7 @@ public class Controller {
                         leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
                         System.out.println("File: " + file.getName() + ", downloaded!");
                     } else {
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "Выбрана не папка!", ButtonType.OK);
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Выбран не файл!", ButtonType.OK);
                         alert.showAndWait();
                     }
                 }
