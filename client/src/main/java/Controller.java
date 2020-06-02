@@ -162,4 +162,38 @@ public class Controller {
 
         rightPC.pathField.setText(currentPath);
     }
+
+    public void createFolderBtnAction(ActionEvent actionEvent) throws IOException {
+        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
+        CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
+
+        if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+            alert.showAndWait();
+            return;
+        }
+
+        if (leftPC.getSelectedFilename() != null) {
+            try {
+                Path srcPath = Paths.get(leftPC.getCurrentPath());
+                //Создание папки
+                File folder = new File(srcPath.toAbsolutePath().toString() + "\\newFolder");
+                if (!folder.exists()) {
+                    folder.mkdir();
+                }
+                leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+            } catch (Exception e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка создания папки!", ButtonType.OK);
+                alert.showAndWait();
+            }
+        }
+
+        if (rightPC.getSelectedFilename() != null) {
+            String currentPath = rightPC.getCurrentPath();
+            rightPC.out.writeUTF("/createFolder " + currentPath);
+
+            //обновляем
+            update(rightPC, currentPath);
+        }
+    }
 }

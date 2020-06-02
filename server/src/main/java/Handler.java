@@ -42,6 +42,16 @@ public class Handler {
                                 delete(new File(s[1]));
                             }
 
+                            if (str.startsWith("/createFolder")) {
+                                String[] s = str.split(" ", 2);
+                                String path = s[1];
+                                //Создание папки
+                                File folder = new File(path + "\\newFolder");
+                                if (!folder.exists()) {
+                                    folder.mkdir();
+                                }
+                            }
+
                             if (str.startsWith("/download")) {
                                 String[] s = str.split(" ", 2);
                                 String filename = s[1];
@@ -78,6 +88,11 @@ public class Handler {
                             if (str.startsWith("/openFolder")) {
                                 String[] s = str.split(" ", 2);
                                 String path = s[1];
+                                try {
+                                    Thread.sleep(10);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
                                 List<FileInfo> collect = Files.list(Paths.get(path)).map(FileInfo::new).collect(Collectors.toList());
                                 out.writeObject(collect);
                                 out.flush();
