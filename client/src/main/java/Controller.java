@@ -87,7 +87,9 @@ public class Controller {
                     Path leftPath = Paths.get(leftPC.getCurrentPath());
                     String currentPath = rightPC.getCurrentPath();
                     String s = srcPath.toAbsolutePath().toString();
-                    if (!Files.isDirectory(srcPath)) {
+                    rightPC.out.writeUTF("/isDir " + s);
+                    String isDir = rightPC.in.readUTF();
+                    if (isDir.equals("false")) {
                         rightPC.out.writeUTF("/putMy " + s);
                         String readUTF = rightPC.in.readUTF();
                         String[] s1 = null;

@@ -106,7 +106,14 @@ public class Handler {
                                 List<FileInfo> collect = Files.list(Paths.get(path)).map(FileInfo::new).collect(Collectors.toList());
                                 out.writeObject(collect);
                                 out.flush();
+                            }
 
+                            if (str.startsWith("/isDir")) {
+                                String[] s = str.split(" ", 2);
+                                String folder = s[1];
+                                boolean directory = Files.isDirectory(Paths.get(folder));
+                                out.writeUTF(String.valueOf(directory));
+                                out.flush();
                             }
                         }
                     } catch (IOException e) {
