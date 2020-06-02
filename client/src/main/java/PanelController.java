@@ -4,10 +4,13 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 
+import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -84,6 +87,16 @@ public class PanelController implements Initializable {
                     Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
                     if (Files.isDirectory(path)) {
                         updateList(path);
+                    } else if (new File(path.toAbsolutePath().toString()).isFile()) {
+                        Desktop desktop = null;
+                        if (Desktop.isDesktopSupported()) {
+                            desktop = Desktop.getDesktop();
+                        }
+                        try {
+                            desktop.open(new File(path.toAbsolutePath().toString()));
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace();
+                        }
                     }
                 }
             }
