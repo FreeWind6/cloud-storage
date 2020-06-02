@@ -81,11 +81,7 @@ public class CloudPanelController implements Initializable {
                     if (Files.isDirectory(path)) {
                         System.out.println(path.toAbsolutePath().toString());
                         try {
-                            out.writeUTF("/openFolder " + path.toAbsolutePath().toString());
-                            filesTable.getItems().clear();
-                            filesTable.getItems().addAll((Collection<? extends FileInfo>) in.readObject());
-                            filesTable.sort();
-
+                            openFolder(path.toAbsolutePath().toString());
                             pathField.setText(path.toAbsolutePath().toString());
                         } catch (IOException | ClassNotFoundException e) {
                             e.printStackTrace();
@@ -96,18 +92,20 @@ public class CloudPanelController implements Initializable {
         });
     }
 
-    public void btnPathUpActionCloud(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
-        Path upperPath = Paths.get(pathField.getText()).getParent();
-
-        out.writeUTF("/openFolder " + upperPath.toAbsolutePath().toString());
+    private void openFolder(String path) throws IOException, ClassNotFoundException {
+        out.writeUTF("/openFolder " + path);
         filesTable.getItems().clear();
         filesTable.getItems().addAll((Collection<? extends FileInfo>) in.readObject());
         filesTable.sort();
+    }
 
+    public void btnPathUpActionCloud(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        Path upperPath = Paths.get(pathField.getText()).getParent();
+        openFolder(upperPath.toAbsolutePath().toString());
         pathField.setText(upperPath.toAbsolutePath().toString());
     }
 
-    public void updateList() {
+    public void startList() {
 
         try {
             out.writeUTF("/updateList");
@@ -143,7 +141,7 @@ public class CloudPanelController implements Initializable {
             socket = new Socket(IP_ADPRESS, PORT);
             in = new ObjectInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-            updateList();
+            startList();
 
             /*new Thread(new Runnable() {
                 @Override
@@ -195,6 +193,4 @@ public class CloudPanelController implements Initializable {
     public void btnConnect(ActionEvent actionEvent) {
         connect();
     }
-
-
 }
