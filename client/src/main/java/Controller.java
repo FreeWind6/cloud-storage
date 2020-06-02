@@ -3,6 +3,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
 import java.io.File;
@@ -16,6 +17,9 @@ import java.util.Collection;
 public class Controller {
     @FXML
     VBox leftPanel, rightPanel;
+
+    @FXML
+    TextField nameFolder;
 
     public void btnExitAction(ActionEvent actionEvent) {
         Platform.exit();
@@ -168,7 +172,7 @@ public class Controller {
         CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
 
         if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран", ButtonType.OK);
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Выберете файл в окне для понимаю области копирования", ButtonType.OK);
             alert.showAndWait();
             return;
         }
@@ -177,10 +181,11 @@ public class Controller {
             try {
                 Path srcPath = Paths.get(leftPC.getCurrentPath());
                 //Создание папки
-                File folder = new File(srcPath.toAbsolutePath().toString() + "\\newFolder");
+                File folder = new File(srcPath.toAbsolutePath().toString() + "\\" + nameFolder.getText());
                 if (!folder.exists()) {
                     folder.mkdir();
                 }
+                nameFolder.setText("");
                 leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка создания папки!", ButtonType.OK);
@@ -191,7 +196,8 @@ public class Controller {
         if (rightPC.getSelectedFilename() != null) {
             String currentPath = rightPC.getCurrentPath();
             rightPC.out.writeUTF("/createFolder " + currentPath);
-
+            rightPC.out.writeUTF("/nameFolder " + nameFolder.getText());
+            nameFolder.setText("");
             //обновляем
             update(rightPC, currentPath);
         }

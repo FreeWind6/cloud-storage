@@ -45,10 +45,16 @@ public class Handler {
                             if (str.startsWith("/createFolder")) {
                                 String[] s = str.split(" ", 2);
                                 String path = s[1];
-                                //Создание папки
-                                File folder = new File(path + "\\newFolder");
-                                if (!folder.exists()) {
-                                    folder.mkdir();
+                                String nameFolder = in.readUTF();
+                                if (nameFolder.startsWith("/nameFolder ")) {
+                                    String[] w = nameFolder.split(" ", 2);
+                                    String name = w[1];
+                                    //Создание папки
+                                    File folder = new File(path + "\\" + name);
+                                    System.out.println(path + "\\" + name);
+                                    if (!folder.exists()) {
+                                        folder.mkdir();
+                                    }
                                 }
                             }
 
