@@ -22,13 +22,14 @@ public class Controller {
     @FXML
     TextField nameFolder;
 
-    public void btnExitAction(ActionEvent actionEvent) {
+    public void btnExitAction() {
         try {
             CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
             rightPC.out.writeUTF("/end");
             Platform.exit();
         } catch (Exception e) {
 //            e.printStackTrace();
+            Platform.exit();
         }
     }
 
@@ -198,36 +199,41 @@ public class Controller {
     public void createFolderBtnAction(ActionEvent actionEvent) throws IOException {
         PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
         CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
+        try {
 
-        if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
+            if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Выберете файл в окне для понимаю области копирования", ButtonType.OK);
+                alert.showAndWait();
+                return;
+            }
+
+            if (leftPC.getSelectedFilename() != null) {
+                try {
+                    Path srcPath = Paths.get(leftPC.getCurrentPath());
+                    //Создание папки
+                    File folder = new File(srcPath.toAbsolutePath().toString() + "\\" + nameFolder.getText());
+                    if (!folder.exists()) {
+                        folder.mkdir();
+                    }
+                    nameFolder.setText("");
+                    leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+                } catch (Exception e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка создания папки!", ButtonType.OK);
+                    alert.showAndWait();
+                }
+            }
+
+            if (rightPC.getSelectedFilename() != null) {
+                String currentPath = rightPC.getCurrentPath();
+                rightPC.out.writeUTF("/createFolder " + currentPath);
+                rightPC.out.writeUTF("/nameFolder " + nameFolder.getText());
+                nameFolder.setText("");
+                //обновляем
+                update(rightPC, currentPath);
+            }
+        } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Выберете файл в окне для понимаю области копирования", ButtonType.OK);
             alert.showAndWait();
-            return;
-        }
-
-        if (leftPC.getSelectedFilename() != null) {
-            try {
-                Path srcPath = Paths.get(leftPC.getCurrentPath());
-                //Создание папки
-                File folder = new File(srcPath.toAbsolutePath().toString() + "\\" + nameFolder.getText());
-                if (!folder.exists()) {
-                    folder.mkdir();
-                }
-                nameFolder.setText("");
-                leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
-            } catch (Exception e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка создания папки!", ButtonType.OK);
-                alert.showAndWait();
-            }
-        }
-
-        if (rightPC.getSelectedFilename() != null) {
-            String currentPath = rightPC.getCurrentPath();
-            rightPC.out.writeUTF("/createFolder " + currentPath);
-            rightPC.out.writeUTF("/nameFolder " + nameFolder.getText());
-            nameFolder.setText("");
-            //обновляем
-            update(rightPC, currentPath);
         }
     }
 }
