@@ -4,15 +4,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.awt.*;
+import java.io.*;
 import java.net.Socket;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
@@ -79,14 +78,46 @@ public class CloudPanelController implements Initializable {
             public void handle(MouseEvent event) {
                 if (event.getClickCount() == 2) {
                     Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
-                    if (Files.isDirectory(path)) {
-                        System.out.println(path.toAbsolutePath().toString());
-                        try {
+                    try {
+                        out.writeUTF("/isDir " + path);
+                        String isDir = in.readUTF();
+                        if (isDir.equals("true")) {
+                            System.out.println(path.toAbsolutePath().toString());
                             openFolder(path.toAbsolutePath().toString());
                             pathField.setText(path.toAbsolutePath().toString());
-                        } catch (IOException | ClassNotFoundException e) {
-                            e.printStackTrace();
+                        } else {
+                            out.writeUTF("/putMy " + path);
+                            String readUTF = in.readUTF();
+                            String[] s1 = null;
+                            if (readUTF.startsWith("/size")) {
+                                s1 = readUTF.split(" ", 2);
+                            }
+                            long length = Long.parseLong(s1[1]);
+                            File folder = new File("temp");
+                            if (!folder.exists()) {
+                                folder.mkdir();
+                            }
+                            File file = new File("temp\\" + filesTable.getSelectionModel().getSelectedItem().getFilename());
+                            System.out.println(file.getAbsolutePath());
+                            file.createNewFile();
+                            FileOutputStream fos = new FileOutputStream(file);
+                            for (long i = 0; i < length; i++) {
+                                fos.write(in.read());
+                            }
+                            fos.close();
+                            Desktop desktop = null;
+                            if (Desktop.isDesktopSupported()) {
+                                desktop = Desktop.getDesktop();
+                            }
+                            try {
+                                desktop.open(new File(file.getAbsolutePath()));
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace();
+                            }
+                            System.out.println("File: " + file.getName() + ", downloaded!");
                         }
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
                     }
                 }
             }
