@@ -64,12 +64,16 @@ public class Controller {
                             rightPC.out.writeUTF(dstPath.toAbsolutePath().toString());
                             FileInputStream fileInputStream = new FileInputStream(file);
                             int x;
+                            Alert alert = new Alert(Alert.AlertType.NONE, "Файл копируется!");
+                            alert.show();
                             while ((x = fileInputStream.read()) != -1) {
                                 rightPC.out.write(x);
                                 rightPC.out.flush();
                             }
                             System.out.println("File: " + leftPC.getSelectedFilename() + ", downloaded!");
                             fileInputStream.close();
+                            alert.setAlertType(Alert.AlertType.INFORMATION);
+                            alert.close();
                             //обновить
                             update(rightPC, currentPath);
                             leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
@@ -102,11 +106,15 @@ public class Controller {
                         if (!file.exists()) {
                             file.createNewFile();
                         }
+                        Alert alert = new Alert(Alert.AlertType.NONE, "Файл копируется!");
+                        alert.show();
                         FileOutputStream fos = new FileOutputStream(file);
                         for (long i = 0; i < length; i++) {
                             fos.write(rightPC.in.read());
                         }
                         fos.close();
+                        alert.setAlertType(Alert.AlertType.INFORMATION);
+                        alert.close();
 
                         //обновить
                         update(rightPC, currentPath);
