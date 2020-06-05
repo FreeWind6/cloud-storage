@@ -97,22 +97,28 @@ public class Controller {
                     rightPC.out.writeUTF("/isDir " + s);
                     String isDir = rightPC.in.readUTF();
                     if (isDir.equals("false")) {
-                        rightPC.out.writeUTF("/putMy " + s);
-                        String readUTF = rightPC.in.readUTF();
-                        String[] s1 = null;
-                        if (readUTF.startsWith("/size")) {
-                            s1 = readUTF.split(" ", 2);
-                        }
-                        long length = Long.parseLong(s1[1]);
+                        rightPC.out.writeUTF("/getFile " + s);
                         File file = new File(leftPath.toAbsolutePath().toString(), rightPC.getSelectedFilename());
                         if (!file.exists()) {
                             file.createNewFile();
                         }
                         Alert alert = new Alert(Alert.AlertType.NONE, "Файл копируется!");
                         alert.show();
+                        byte[] buffer = new byte[1024];
                         FileOutputStream fos = new FileOutputStream(file);
-                        for (long i = 0; i < length; i++) {
-                            fos.write(rightPC.in.read());
+                        while (true) {
+                            int read = rightPC.in.read(buffer);
+                            System.out.println(read);
+                            if (read == 1024) {
+                                fos.write(buffer);
+                            } else {
+                                byte[] teil = new byte[read];
+                                if (read >= 0) {
+                                    System.arraycopy(buffer, 0, teil, 0, read);
+                                }
+                                fos.write(teil);
+                                break;
+                            }
                         }
                         fos.close();
                         alert.setAlertType(Alert.AlertType.INFORMATION);

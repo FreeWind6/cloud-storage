@@ -91,16 +91,15 @@ public class Handler {
                                 System.out.println("File: " + filename + ", downloaded!");
                             }
 
-                            if (str.startsWith("/putMy")) {
+                            if (str.startsWith("/getFile")) {
                                 String[] s = str.split(" ", 2);
                                 String filename = s[1];
                                 File file = new File(filename);
-                                long s1 = file.length();
-                                out.writeUTF("/size " + s1);
                                 FileInputStream fileInputStream = new FileInputStream(file);
                                 int x;
-                                while ((x = fileInputStream.read()) != -1) {
-                                    out.write(x);
+                                byte[] buffer = new byte[1024];
+                                while ((x = fileInputStream.read(buffer)) != -1) {
+                                    out.write(buffer, 0, x);
                                     out.flush();
                                 }
                                 fileInputStream.close();
