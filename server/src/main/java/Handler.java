@@ -71,9 +71,21 @@ public class Handler {
                                 if (!file.exists()) {
                                     file.createNewFile();
                                 }
+                                byte[] buffer = new byte[8192];
                                 FileOutputStream fos = new FileOutputStream(file);
-                                for (long i = 0; i < length; i++) {
-                                    fos.write(in.read());
+                                while (true) {
+                                    int read = in.read(buffer);
+                                    System.out.println(read);
+                                    if (read == 8192) {
+                                        fos.write(buffer);
+                                    } else {
+                                        byte[] teil = new byte[read];
+                                        if (read >= 0) {
+                                            System.arraycopy(buffer, 0, teil, 0, read);
+                                        }
+                                        fos.write(teil);
+                                        break;
+                                    }
                                 }
                                 fos.close();
                                 System.out.println("File: " + filename + ", downloaded!");

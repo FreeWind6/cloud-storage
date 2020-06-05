@@ -58,7 +58,8 @@ public class Controller {
 
                     try {
                         if (!Files.isDirectory(srcPath)) {
-                            rightPC.out.writeUTF("/download " + leftPC.getSelectedFilename());
+                            String fileName = leftPC.getSelectedFilename();
+                            rightPC.out.writeUTF("/download " + fileName);
                             File file = new File(srcPath.toAbsolutePath().toString());
                             rightPC.out.writeLong(file.length());
                             rightPC.out.writeUTF(dstPath.toAbsolutePath().toString());
@@ -66,11 +67,12 @@ public class Controller {
                             int x;
                             Alert alert = new Alert(Alert.AlertType.NONE, "Файл копируется!");
                             alert.show();
-                            while ((x = fileInputStream.read()) != -1) {
-                                rightPC.out.write(x);
+                            byte[] buffer = new byte[8192];
+                            while ((x = fileInputStream.read(buffer)) != -1) {
+                                rightPC.out.write(buffer, 0, x);
                                 rightPC.out.flush();
                             }
-                            System.out.println("File: " + leftPC.getSelectedFilename() + ", downloaded!");
+                            System.out.println("File: " + fileName + ", downloaded!");
                             fileInputStream.close();
                             alert.setAlertType(Alert.AlertType.INFORMATION);
                             alert.close();
@@ -186,6 +188,11 @@ public class Controller {
     }
 
     private void update(CloudPanelController rightPC, String currentPath) {
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         try {
             rightPC.out.writeUTF("/openFolder " + currentPath);
         } catch (IOException e) {
