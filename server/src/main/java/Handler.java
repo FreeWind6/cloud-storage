@@ -71,24 +71,35 @@ public class Handler {
                                 if (!file.exists()) {
                                     file.createNewFile();
                                 }
+                                byte[] buffer = new byte[8192];
                                 FileOutputStream fos = new FileOutputStream(file);
-                                for (long i = 0; i < length; i++) {
-                                    fos.write(in.read());
+                                while (true) {
+                                    int read = in.read(buffer);
+                                    System.out.println(read);
+                                    if (read == 8192) {
+                                        fos.write(buffer);
+                                    } else {
+                                        byte[] teil = new byte[read];
+                                        if (read >= 0) {
+                                            System.arraycopy(buffer, 0, teil, 0, read);
+                                        }
+                                        fos.write(teil);
+                                        break;
+                                    }
                                 }
                                 fos.close();
                                 System.out.println("File: " + filename + ", downloaded!");
                             }
 
-                            if (str.startsWith("/putMy")) {
+                            if (str.startsWith("/getFile")) {
                                 String[] s = str.split(" ", 2);
                                 String filename = s[1];
                                 File file = new File(filename);
-                                long s1 = file.length();
-                                out.writeUTF("/size " + s1);
                                 FileInputStream fileInputStream = new FileInputStream(file);
                                 int x;
-                                while ((x = fileInputStream.read()) != -1) {
-                                    out.write(x);
+                                byte[] buffer = new byte[1024];
+                                while ((x = fileInputStream.read(buffer)) != -1) {
+                                    out.write(buffer, 0, x);
                                     out.flush();
                                 }
                                 fileInputStream.close();
