@@ -122,7 +122,8 @@ public class CloudPanelController implements Initializable {
                             System.out.println("File: " + file.getName() + ", downloaded!");
                         }
                     } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+                        alert.showAndWait();
                     }
                 }
             }
