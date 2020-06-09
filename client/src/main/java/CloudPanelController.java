@@ -86,13 +86,7 @@ public class CloudPanelController implements Initializable {
                             openFolder(path.toAbsolutePath().toString());
                             pathField.setText(path.toAbsolutePath().toString());
                         } else {
-                            out.writeUTF("/putMy " + path);
-                            String readUTF = in.readUTF();
-                            String[] s1 = null;
-                            if (readUTF.startsWith("/size")) {
-                                s1 = readUTF.split(" ", 2);
-                            }
-                            long length = Long.parseLong(s1[1]);
+                            out.writeUTF("/getFile " + path);
                             File folder = new File("temp");
                             if (!folder.exists()) {
                                 folder.mkdir();
@@ -100,9 +94,20 @@ public class CloudPanelController implements Initializable {
                             File file = new File("temp\\" + filesTable.getSelectionModel().getSelectedItem().getFilename());
                             System.out.println(file.getAbsolutePath());
                             file.createNewFile();
+                            byte[] buffer = new byte[1024];
                             FileOutputStream fos = new FileOutputStream(file);
-                            for (long i = 0; i < length; i++) {
-                                fos.write(in.read());
+                            while (true) {
+                                int read = in.read(buffer);
+                                if (read == 1024) {
+                                    fos.write(buffer);
+                                } else {
+                                    byte[] teil = new byte[read];
+                                    if (read >= 0) {
+                                        System.arraycopy(buffer, 0, teil, 0, read);
+                                    }
+                                    fos.write(teil);
+                                    break;
+                                }
                             }
                             fos.close();
                             Desktop desktop = null;
