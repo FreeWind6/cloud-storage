@@ -1,3 +1,5 @@
+import db.HibernateUtil;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -11,6 +13,8 @@ public class Handler {
     private DataInputStream in;
     private ObjectOutputStream out;
     private ServerMain server;
+    HibernateUtil hibernateUtil = new HibernateUtil();
+    String folder;
 
     public Handler(ServerMain server, Socket socket) {
         try {
@@ -25,18 +29,33 @@ public class Handler {
                     try {
                         while (true) {
                             String str = in.readUTF();
+                            System.out.println(str);
+                            if (str.startsWith("/auth")) {
+                                String[] tokes = str.split(" ");
+                                folder = hibernateUtil.getFolderByLoginAndPass(tokes[1], tokes[2]);
+                                if (folder != null) {
+                                    out.writeUTF("/authok");
+                                    out.flush();
+                                    System.out.println("/authok");
+                                } else {
+                                    out.writeUTF("/autherror");
+                                    out.flush();
+                                    System.out.println("/autherror");
+                                }
+                            }
+
                             if (str.equals("/end")) {
                                 break;
                             }
 
                             if (str.equals("/path")) {
-                                Path path = Paths.get("D:\\");
+                                Path path = Paths.get("./" + folder);
                                 out.writeUTF(path.normalize().toAbsolutePath().toString());
                                 out.flush();
                             }
 
                             if (str.equals("/updateList")) {
-                                List<FileInfo> collect = Files.list(Paths.get("D:\\")).map(FileInfo::new).collect(Collectors.toList());
+                                List<FileInfo> collect = Files.list(Paths.get("./" + folder)).map(FileInfo::new).collect(Collectors.toList());
                                 out.writeObject(collect);
                                 out.flush();
                             }

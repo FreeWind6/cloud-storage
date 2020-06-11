@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <VBox alignment="center" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/10.0.2-internal"
       fx:controller="CloudPanelController">
-    <HBox>
-        <!--        <ComboBox fx:id="disksBox" onAction="#selectDiskAction"/>-->
-        <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
+    <HBox fx:id="isNotAuthPanel">
+        <TextField HBox.hgrow="ALWAYS" promptText="Логин" fx:id="loginField"></TextField>
+        <PasswordField promptText="Пароль" fx:id="passwordField" onAction="#btnConnect"/>
         <Button text="Соединиться" onAction="#btnConnect"/>
-        <Button text="Вверх" onAction="#btnPathUpActionCloud"/>
+    </HBox>
+    <HBox fx:id="isAuthPanel" visible="false" managed="false">
+        <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
+        <Button text="Вверх" fx:id="pathUp" onAction="#btnPathUpActionCloud"/>
     </HBox>
     <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
 

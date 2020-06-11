@@ -4,9 +4,11 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 
 import java.awt.*;
 import java.io.*;
@@ -20,15 +22,24 @@ import java.util.ResourceBundle;
 
 public class CloudPanelController implements Initializable {
     @FXML
+    Button pathUp;
+
+    @FXML
+    HBox isNotAuthPanel, isAuthPanel;
+
+    @FXML
     TableView<FileInfo> filesTable;
 
     @FXML
-    TextField pathField;
+    TextField pathField, loginField, passwordField;
+
+    private boolean isAuthorized;
 
     ObjectInputStream in;
     DataOutputStream out;
     Socket socket;
     Boolean connect;
+    String startPath;
 
     final String IP_ADPRESS = "localhost";
     final int PORT = 8189;
@@ -82,7 +93,6 @@ public class CloudPanelController implements Initializable {
                         out.writeUTF("/isDir " + path);
                         String isDir = in.readUTF();
                         if (isDir.equals("true")) {
-                            System.out.println(path.toAbsolutePath().toString());
                             openFolder(path.toAbsolutePath().toString());
                             pathField.setText(path.toAbsolutePath().toString());
                         } else {
@@ -130,21 +140,48 @@ public class CloudPanelController implements Initializable {
         });
     }
 
+    public void setAuthorized(boolean isAuthorized) {
+        this.isAuthorized = isAuthorized;
+        if (!isAuthorized) {
+            isAuthPanel.setVisible(false);
+            isAuthPanel.setManaged(false);
+            isNotAuthPanel.setVisible(true);
+            isNotAuthPanel.setManaged(true);
+        } else {
+            isAuthPanel.setVisible(true);
+            isAuthPanel.setManaged(true);
+            isNotAuthPanel.setVisible(false);
+            isNotAuthPanel.setManaged(false);
+        }
+    }
+
     private void openFolder(String path) throws IOException, ClassNotFoundException {
         out.writeUTF("/openFolder " + path);
         filesTable.getItems().clear();
         filesTable.getItems().addAll((Collection<? extends FileInfo>) in.readObject());
         filesTable.sort();
+        srcPathBtnUp();
+    }
+
+    private void srcPathBtnUp() {
+        //если путь равен папке пользователя
+        if (startPath.equals(String.valueOf(Paths.get(pathField.getText()).getParent()))) {
+            pathUp.setVisible(false);
+            pathUp.setManaged(false);
+        } else {
+            pathUp.setVisible(true);
+            pathUp.setManaged(true);
+        }
     }
 
     public void btnPathUpActionCloud(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
+        srcPathBtnUp();
         Path upperPath = Paths.get(pathField.getText()).getParent();
         openFolder(upperPath.toAbsolutePath().toString());
         pathField.setText(upperPath.toAbsolutePath().toString());
     }
 
     public void startList() {
-
         try {
             out.writeUTF("/updateList");
             filesTable.getItems().clear();
@@ -152,7 +189,10 @@ public class CloudPanelController implements Initializable {
             filesTable.sort();
 
             out.writeUTF("/path");
-            pathField.setText(in.readUTF());
+            startPath = in.readUTF();
+            pathField.setText(startPath);
+            pathUp.setVisible(false);
+            pathUp.setManaged(false);
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
@@ -179,8 +219,6 @@ public class CloudPanelController implements Initializable {
             socket = new Socket(IP_ADPRESS, PORT);
             in = new ObjectInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-            startList();
-            connect = true;
 
             /*new Thread(new Runnable() {
                 @Override
@@ -223,12 +261,35 @@ public class CloudPanelController implements Initializable {
                 }
             }).start();*/
         } catch (IOException e) {
+            setAuthorized(false);
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
             alert.showAndWait();
         }
     }
 
     public void btnConnect(ActionEvent actionEvent) {
-        connect();
+        if (socket == null || socket.isClosed()) {
+            connect();
+        }
+        try {
+            out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());
+            out.flush();
+            String str = in.readUTF();
+            if (str.startsWith("/authok")) {
+                loginField.setText("");
+                passwordField.setText("");
+                startList();
+                setAuthorized(true);
+                connect = true;
+            } else if (str.startsWith("/autherror")) {
+                loginField.setText("");
+                passwordField.setText("");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Неправильный логин/пароль!", ButtonType.OK);
+                alert.showAndWait();
+            }
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            alert.showAndWait();
+        }
     }
 }
