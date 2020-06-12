@@ -37,7 +37,7 @@ CREATE TABLE `main` (
 
 LOCK TABLES `main` WRITE;
 /*!40000 ALTER TABLE `main` DISABLE KEYS */;
-INSERT INTO `main` VALUES (1,'user','user','user');
+INSERT INTO `main` VALUES (1,'user','ee11cbb19052e40b07aac0ca060c23ee','user');
 /*!40000 ALTER TABLE `main` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

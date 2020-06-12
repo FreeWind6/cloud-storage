@@ -11,10 +11,13 @@ import javafx.scene.layout.HBox;
 
 import java.awt.*;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.ResourceBundle;
@@ -256,7 +259,7 @@ public class CloudPanelController implements Initializable {
             connect();
         }
         try {
-            out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());
+            out.writeUTF("/auth " + loginField.getText() + " " + md5Custom(passwordField.getText()));
             out.flush();
             String str = in.readUTF();
             if (str.startsWith("/authok")) {
@@ -275,5 +278,28 @@ public class CloudPanelController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
             alert.showAndWait();
         }
+    }
+
+    public static String md5Custom(String st) {
+        MessageDigest messageDigest = null;
+        byte[] digest = new byte[0];
+
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.reset();
+            messageDigest.update(st.getBytes());
+            digest = messageDigest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        BigInteger bigInt = new BigInteger(1, digest);
+        String md5Hex = bigInt.toString(16);
+
+        while (md5Hex.length() < 32) {
+            md5Hex = "0" + md5Hex;
+        }
+
+        return md5Hex;
     }
 }
