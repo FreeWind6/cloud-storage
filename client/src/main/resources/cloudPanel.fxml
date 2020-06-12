@@ -7,7 +7,8 @@
     <HBox fx:id="isNotAuthPanel">
         <TextField HBox.hgrow="ALWAYS" promptText="Логин" fx:id="loginField"></TextField>
         <PasswordField promptText="Пароль" fx:id="passwordField" onAction="#btnConnect"/>
-        <Button text="Соединиться" onAction="#btnConnect"/>
+        <Button text="Авторизоваться" onAction="#btnConnect"/>
+        <Button text="Зарегистрироваться" onAction="#btnReg"/>
     </HBox>
     <HBox fx:id="isAuthPanel" visible="false" managed="false">
         <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>

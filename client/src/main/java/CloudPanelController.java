@@ -189,8 +189,6 @@ public class CloudPanelController implements Initializable {
             Alert alert = new Alert(Alert.AlertType.WARNING, "По какой-то причине не удалось обновить список файлов", ButtonType.OK);
             alert.showAndWait();
         }
-
-
     }
 
     public String getSelectedFilename() {
@@ -314,5 +312,34 @@ public class CloudPanelController implements Initializable {
         filesTable.getItems().clear();
         socket.close();
         connect = false;
+    }
+
+    public void btnReg(ActionEvent actionEvent) throws IOException {
+        if (socket == null || socket.isClosed()) {
+            connect();
+        }
+        try {
+            out.writeUTF("/reg " + loginField.getText() + " " + md5Custom(passwordField.getText()));
+            out.flush();
+            String str = in.readUTF();
+            if (str.startsWith("/regok")) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Успешная регистрация!", ButtonType.OK);
+                alert.showAndWait();
+            } else if (str.startsWith("/regerror")) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка регестрации!", ButtonType.OK);
+                alert.showAndWait();
+            }
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            alert.showAndWait();
+        } catch (NullPointerException e) {
+
+        } finally {
+            out.writeUTF("/end");
+            setAuthorized(false);
+            filesTable.getItems().clear();
+            socket.close();
+            connect = false;
+        }
     }
 }

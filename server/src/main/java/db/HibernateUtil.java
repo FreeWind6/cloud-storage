@@ -27,4 +27,22 @@ public class HibernateUtil {
             return null;
         }
     }
+
+    public String insertTable(String login, String password, String folderName) {
+        try {
+            session = sessionFactory.getCurrentSession();
+            session.beginTransaction();
+            MainDB query = session.createQuery("SELECT i FROM MainDB i WHERE i.login = :login AND i.password = :password", MainDB.class)
+                    .setParameter("login", login)
+                    .setParameter("password", password)
+                    .getSingleResult();
+            session.getTransaction().commit();
+            return null;
+        } catch (NoResultException e) {
+            MainDB mainDB = new MainDB(login, password, folderName);
+            session.save(mainDB);
+            session.getTransaction().commit();
+            return "ok";
+        }
+    }
 }

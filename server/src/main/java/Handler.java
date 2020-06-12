@@ -44,6 +44,21 @@ public class Handler {
                                 }
                             }
 
+                            if (str.startsWith("/reg")) {
+                                String[] tokes = str.split(" ");
+                                String createFolder = createFolderName(tokes[1]);
+                                System.out.println(createFolder);
+                                String insert = hibernateUtil.insertTable(tokes[1], tokes[2], createFolder);
+                                if (insert != null) {
+                                    out.writeUTF("/regok");
+                                    out.flush();
+                                    Files.createDirectory(Paths.get("./" + createFolder));
+                                } else {
+                                    out.writeUTF("/regerror");
+                                    out.flush();
+                                }
+                            }
+
                             if (str.equals("/end")) {
                                 break;
                             }
@@ -184,6 +199,14 @@ public class Handler {
                     } else {
                         file.delete();
                     }
+                }
+
+                private String createFolderName(String login) {
+                    int a = 0; // Начальное значение диапазона - "от"
+                    int b = 10000000; // Конечное значение диапазона - "до"
+                    int random_number = a + (int) (Math.random() * b); // Генерация числа
+
+                    return login + random_number;
                 }
             }).start();
         } catch (IOException e) {

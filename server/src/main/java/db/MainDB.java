@@ -54,8 +54,7 @@ public class MainDB {
     public MainDB() {
     }
 
-    public MainDB(Long id, String login, String password, String folderName) {
-        this.id = id;
+    public MainDB(String login, String password, String folderName) {
         this.login = login;
         this.password = password;
         this.folderName = folderName;
