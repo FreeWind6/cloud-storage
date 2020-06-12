@@ -7,28 +7,39 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 
 import java.awt.*;
 import java.io.*;
+import java.math.BigInteger;
 import java.net.Socket;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.ResourceBundle;
 
 public class CloudPanelController implements Initializable {
+
+    @FXML
+    HBox isNotAuthPanel, isAuthPanel;
+
     @FXML
     TableView<FileInfo> filesTable;
 
     @FXML
-    TextField pathField;
+    TextField pathField, loginField, passwordField;
+
+    private boolean isAuthorized;
 
     ObjectInputStream in;
     DataOutputStream out;
     Socket socket;
     Boolean connect;
+    String startPath;
 
     final String IP_ADPRESS = "localhost";
     final int PORT = 8189;
@@ -77,14 +88,13 @@ public class CloudPanelController implements Initializable {
             @Override
             public void handle(MouseEvent event) {
                 if (event.getClickCount() == 2) {
-                    Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
                     try {
+                        Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
                         out.writeUTF("/isDir " + path);
                         String isDir = in.readUTF();
                         if (isDir.equals("true")) {
-                            System.out.println(path.toAbsolutePath().toString());
-                            openFolder(path.toAbsolutePath().toString());
-                            pathField.setText(path.toAbsolutePath().toString());
+                            openFolder(path.toString());
+                            pathField.setText(path.toString());
                         } else {
                             out.writeUTF("/getFile " + path);
                             File folder = new File("temp");
@@ -124,10 +134,28 @@ public class CloudPanelController implements Initializable {
                     } catch (IOException | ClassNotFoundException e) {
                         Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
                         alert.showAndWait();
+                    } catch (NullPointerException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Ничего не выбрано!", ButtonType.OK);
+                        alert.showAndWait();
                     }
                 }
             }
         });
+    }
+
+    public void setAuthorized(boolean isAuthorized) {
+        this.isAuthorized = isAuthorized;
+        if (!isAuthorized) {
+            isAuthPanel.setVisible(false);
+            isAuthPanel.setManaged(false);
+            isNotAuthPanel.setVisible(true);
+            isNotAuthPanel.setManaged(true);
+        } else {
+            isAuthPanel.setVisible(true);
+            isAuthPanel.setManaged(true);
+            isNotAuthPanel.setVisible(false);
+            isNotAuthPanel.setManaged(false);
+        }
     }
 
     private void openFolder(String path) throws IOException, ClassNotFoundException {
@@ -139,12 +167,13 @@ public class CloudPanelController implements Initializable {
 
     public void btnPathUpActionCloud(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
         Path upperPath = Paths.get(pathField.getText()).getParent();
-        openFolder(upperPath.toAbsolutePath().toString());
-        pathField.setText(upperPath.toAbsolutePath().toString());
+        if (upperPath != null) {
+            openFolder(upperPath.toString());
+            pathField.setText(upperPath.toString());
+        }
     }
 
     public void startList() {
-
         try {
             out.writeUTF("/updateList");
             filesTable.getItems().clear();
@@ -152,15 +181,14 @@ public class CloudPanelController implements Initializable {
             filesTable.sort();
 
             out.writeUTF("/path");
-            pathField.setText(in.readUTF());
+            startPath = in.readUTF();
+            pathField.setText(startPath);
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.WARNING, "По какой-то причине не удалось обновить список файлов", ButtonType.OK);
             alert.showAndWait();
         }
-
-
     }
 
     public String getSelectedFilename() {
@@ -179,8 +207,6 @@ public class CloudPanelController implements Initializable {
             socket = new Socket(IP_ADPRESS, PORT);
             in = new ObjectInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-            startList();
-            connect = true;
 
             /*new Thread(new Runnable() {
                 @Override
@@ -223,12 +249,97 @@ public class CloudPanelController implements Initializable {
                 }
             }).start();*/
         } catch (IOException e) {
+            setAuthorized(false);
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
             alert.showAndWait();
         }
     }
 
     public void btnConnect(ActionEvent actionEvent) {
-        connect();
+        if (socket == null || socket.isClosed()) {
+            connect();
+        }
+        try {
+            out.writeUTF("/auth " + loginField.getText() + " " + md5Custom(passwordField.getText()));
+            out.flush();
+            String str = in.readUTF();
+            if (str.startsWith("/authok")) {
+                loginField.clear();
+                passwordField.clear();
+                startList();
+                setAuthorized(true);
+                connect = true;
+            } else if (str.startsWith("/autherror")) {
+                loginField.setText("");
+                passwordField.setText("");
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Неправильный логин/пароль!", ButtonType.OK);
+                alert.showAndWait();
+            }
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            alert.showAndWait();
+        } catch (NullPointerException e) {
+
+        }
+    }
+
+    public static String md5Custom(String st) {
+        MessageDigest messageDigest = null;
+        byte[] digest = new byte[0];
+
+        try {
+            messageDigest = MessageDigest.getInstance("MD5");
+            messageDigest.reset();
+            messageDigest.update(st.getBytes());
+            digest = messageDigest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+
+        BigInteger bigInt = new BigInteger(1, digest);
+        String md5Hex = bigInt.toString(16);
+
+        while (md5Hex.length() < 32) {
+            md5Hex = "0" + md5Hex;
+        }
+
+        return md5Hex;
+    }
+
+    public void btnExitUser(ActionEvent actionEvent) throws IOException {
+        out.writeUTF("/end");
+        setAuthorized(false);
+        filesTable.getItems().clear();
+        socket.close();
+        connect = false;
+    }
+
+    public void btnReg(ActionEvent actionEvent) throws IOException {
+        if (socket == null || socket.isClosed()) {
+            connect();
+        }
+        try {
+            out.writeUTF("/reg " + loginField.getText() + " " + md5Custom(passwordField.getText()));
+            out.flush();
+            String str = in.readUTF();
+            if (str.startsWith("/regok")) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Успешная регистрация!", ButtonType.OK);
+                alert.showAndWait();
+            } else if (str.startsWith("/regerror")) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка регестрации!", ButtonType.OK);
+                alert.showAndWait();
+            }
+        } catch (IOException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            alert.showAndWait();
+        } catch (NullPointerException e) {
+
+        } finally {
+            out.writeUTF("/end");
+            setAuthorized(false);
+            filesTable.getItems().clear();
+            socket.close();
+            connect = false;
+        }
     }
 }

@@ -1,3 +1,5 @@
+import db.HibernateUtil;
+
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -11,6 +13,8 @@ public class Handler {
     private DataInputStream in;
     private ObjectOutputStream out;
     private ServerMain server;
+    HibernateUtil hibernateUtil = new HibernateUtil();
+    String folder;
 
     public Handler(ServerMain server, Socket socket) {
         try {
@@ -25,18 +29,49 @@ public class Handler {
                     try {
                         while (true) {
                             String str = in.readUTF();
+                            System.out.println(str);
+                            if (str.startsWith("/auth")) {
+                                String[] tokes = str.split(" ");
+                                folder = hibernateUtil.getFolderByLoginAndPass(tokes[1], tokes[2]);
+                                if (folder != null) {
+                                    out.writeUTF("/authok");
+                                    out.flush();
+                                    System.out.println("/authok");
+                                } else {
+                                    out.writeUTF("/autherror");
+                                    out.flush();
+                                    System.out.println("/autherror");
+                                }
+                            }
+
+                            if (str.startsWith("/reg")) {
+                                String[] tokes = str.split(" ");
+                                String createFolder = createFolderName(tokes[1]);
+                                System.out.println(createFolder);
+                                String insert = hibernateUtil.insertTable(tokes[1], tokes[2], createFolder);
+                                if (insert != null) {
+                                    out.writeUTF("/regok");
+                                    out.flush();
+                                    Files.createDirectory(Paths.get("./" + createFolder));
+                                    createFile(Paths.get("./" + createFolder), tokes[1]);
+                                } else {
+                                    out.writeUTF("/regerror");
+                                    out.flush();
+                                }
+                            }
+
                             if (str.equals("/end")) {
                                 break;
                             }
 
                             if (str.equals("/path")) {
-                                Path path = Paths.get("D:\\");
-                                out.writeUTF(path.normalize().toAbsolutePath().toString());
+                                Path path = Paths.get("./" + folder);
+                                out.writeUTF(path.normalize().toString());
                                 out.flush();
                             }
 
                             if (str.equals("/updateList")) {
-                                List<FileInfo> collect = Files.list(Paths.get("D:\\")).map(FileInfo::new).collect(Collectors.toList());
+                                List<FileInfo> collect = Files.list(Paths.get("./" + folder)).map(FileInfo::new).collect(Collectors.toList());
                                 out.writeObject(collect);
                                 out.flush();
                             }
@@ -44,6 +79,15 @@ public class Handler {
                             if (str.startsWith("/delete")) {
                                 String[] s = str.split(" ", 2);
                                 delete(new File(s[1]));
+                            }
+
+                            if (str.startsWith("/rename")) {
+                                String[] s = str.split(" ", 2);
+                                File file = new File(s[1]);
+                                String getCurrentPath = in.readUTF();
+                                String rename = in.readUTF();
+                                File renameFile = new File(getCurrentPath, rename);
+                                file.renameTo(renameFile);
                             }
 
                             if (str.startsWith("/createFolder")) {
@@ -165,6 +209,20 @@ public class Handler {
                     } else {
                         file.delete();
                     }
+                }
+
+                private String createFolderName(String login) {
+                    int a = 0; // Начальное значение диапазона - "от"
+                    int b = 10000000; // Конечное значение диапазона - "до"
+                    int random_number = a + (int) (Math.random() * b); // Генерация числа
+
+                    return login + random_number;
+                }
+
+                public void createFile(Path path, String login) throws IOException {
+                    FileWriter fileWriter = new FileWriter(path + "/info.txt");
+                    fileWriter.append(login + "! Добро пожаловать на облачное хранилище Cloud FreeWind!");
+                    fileWriter.close();
                 }
             }).start();
         } catch (IOException e) {

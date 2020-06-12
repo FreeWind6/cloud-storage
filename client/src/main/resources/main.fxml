@@ -24,6 +24,10 @@
             <TextField fx:id="nameFolder" maxWidth="Infinity" focusTraversable="false" HBox.hgrow="ALWAYS"/>
             <Button maxWidth="Infinity" focusTraversable="false" text="Создать папку" HBox.hgrow="ALWAYS" onAction="#createFolderBtnAction"/>
         </VBox>
+        <VBox minWidth="250">
+            <TextField fx:id="rename" maxWidth="Infinity" focusTraversable="false" HBox.hgrow="ALWAYS"/>
+            <Button maxWidth="Infinity" focusTraversable="false" text="Переименовать" HBox.hgrow="ALWAYS" onAction="#renameBtnAction"/>
+        </VBox>
         <Button maxWidth="Infinity" focusTraversable="false" text="Выход из программы" HBox.hgrow="ALWAYS"
                 onAction="#btnExitAction"/>
         <padding>
