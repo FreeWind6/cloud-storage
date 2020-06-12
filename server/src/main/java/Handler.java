@@ -80,6 +80,15 @@ public class Handler {
                                 delete(new File(s[1]));
                             }
 
+                            if (str.startsWith("/rename")) {
+                                String[] s = str.split(" ", 2);
+                                File file = new File(s[1]);
+                                String getCurrentPath = in.readUTF();
+                                String rename = in.readUTF();
+                                File renameFile = new File(getCurrentPath, rename);
+                                file.renameTo(renameFile);
+                            }
+
                             if (str.startsWith("/createFolder")) {
                                 String[] s = str.split(" ", 2);
                                 String path = s[1];

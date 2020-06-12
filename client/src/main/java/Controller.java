@@ -20,7 +20,7 @@ public class Controller {
     VBox leftPanel, rightPanel;
 
     @FXML
-    TextField nameFolder;
+    TextField nameFolder, rename;
 
     public void btnExitAction() {
         try {
@@ -236,7 +236,7 @@ public class Controller {
                     if (!folder.exists()) {
                         folder.mkdir();
                     }
-                    nameFolder.setText("");
+                    nameFolder.clear();
                     leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
                 } catch (Exception e) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка создания папки!", ButtonType.OK);
@@ -248,12 +248,61 @@ public class Controller {
                 String currentPath = rightPC.getCurrentPath();
                 rightPC.out.writeUTF("/createFolder " + currentPath);
                 rightPC.out.writeUTF("/nameFolder " + nameFolder.getText());
-                nameFolder.setText("");
+                nameFolder.clear();
                 //обновляем
                 update(rightPC, currentPath);
             }
         } catch (Exception e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Выберете файл в окне для понимаю области копирования", ButtonType.OK);
+            alert.showAndWait();
+        }
+    }
+
+    public void renameBtnAction(ActionEvent actionEvent) throws IOException {
+        PanelController leftPC = (PanelController) leftPanel.getProperties().get("ctrlleftleft");
+        CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
+
+        try {
+            if (leftPC.getSelectedFilename() == null && rightPC.getSelectedFilename() == null) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Ни один файл не был выбран!", ButtonType.OK);
+                alert.showAndWait();
+                return;
+            }
+
+            if (leftPC.getSelectedFilename() != null) {
+                try {
+                    Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
+                    File file = new File(srcPath.toString());
+
+                    //переименованный путь
+                    Path renamePath = Paths.get(leftPC.getCurrentPath(), rename.getText());
+
+                    file.renameTo(new File(renamePath.toString()));
+                    rename.clear();
+                    leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
+                } catch (Exception e) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка переименования!", ButtonType.OK);
+                    alert.showAndWait();
+                }
+            }
+
+            if (rightPC.getSelectedFilename() != null) {
+                Path srcPath = Paths.get(rightPC.getCurrentPath(), rightPC.getSelectedFilename());
+                String currentPath = rightPC.getCurrentPath();
+                String s = srcPath.toString();
+                rightPC.out.writeUTF("/rename " + s);
+                rightPC.out.flush();
+                rightPC.out.writeUTF(rightPC.getCurrentPath());
+                rightPC.out.flush();
+                rightPC.out.writeUTF(rename.getText());
+                rightPC.out.flush();
+                rename.clear();
+
+                //обновляем
+                update(rightPC, currentPath);
+            }
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Выберете файл!", ButtonType.OK);
             alert.showAndWait();
         }
     }
