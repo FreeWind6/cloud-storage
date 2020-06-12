@@ -50,7 +50,7 @@ public class Handler {
 
                             if (str.equals("/path")) {
                                 Path path = Paths.get("./" + folder);
-                                out.writeUTF(path.normalize().toAbsolutePath().toString());
+                                out.writeUTF(path.normalize().toString());
                                 out.flush();
                             }
 

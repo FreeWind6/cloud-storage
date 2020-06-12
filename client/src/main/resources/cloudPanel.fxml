@@ -11,7 +11,7 @@
     </HBox>
     <HBox fx:id="isAuthPanel" visible="false" managed="false">
         <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
-        <Button text="Вверх" fx:id="pathUp" onAction="#btnPathUpActionCloud"/>
+        <Button text="Вверх" onAction="#btnPathUpActionCloud"/>
     </HBox>
     <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
 

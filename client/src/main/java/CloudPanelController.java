@@ -4,7 +4,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
@@ -21,8 +20,6 @@ import java.util.Collection;
 import java.util.ResourceBundle;
 
 public class CloudPanelController implements Initializable {
-    @FXML
-    Button pathUp;
 
     @FXML
     HBox isNotAuthPanel, isAuthPanel;
@@ -93,8 +90,8 @@ public class CloudPanelController implements Initializable {
                         out.writeUTF("/isDir " + path);
                         String isDir = in.readUTF();
                         if (isDir.equals("true")) {
-                            openFolder(path.toAbsolutePath().toString());
-                            pathField.setText(path.toAbsolutePath().toString());
+                            openFolder(path.toString());
+                            pathField.setText(path.toString());
                         } else {
                             out.writeUTF("/getFile " + path);
                             File folder = new File("temp");
@@ -160,25 +157,14 @@ public class CloudPanelController implements Initializable {
         filesTable.getItems().clear();
         filesTable.getItems().addAll((Collection<? extends FileInfo>) in.readObject());
         filesTable.sort();
-        srcPathBtnUp();
-    }
-
-    private void srcPathBtnUp() {
-        //если путь равен папке пользователя
-        if (startPath.equals(String.valueOf(Paths.get(pathField.getText()).getParent()))) {
-            pathUp.setVisible(false);
-            pathUp.setManaged(false);
-        } else {
-            pathUp.setVisible(true);
-            pathUp.setManaged(true);
-        }
     }
 
     public void btnPathUpActionCloud(ActionEvent actionEvent) throws IOException, ClassNotFoundException {
-        srcPathBtnUp();
         Path upperPath = Paths.get(pathField.getText()).getParent();
-        openFolder(upperPath.toAbsolutePath().toString());
-        pathField.setText(upperPath.toAbsolutePath().toString());
+        if (upperPath != null) {
+            openFolder(upperPath.toString());
+            pathField.setText(upperPath.toString());
+        }
     }
 
     public void startList() {
@@ -191,8 +177,6 @@ public class CloudPanelController implements Initializable {
             out.writeUTF("/path");
             startPath = in.readUTF();
             pathField.setText(startPath);
-            pathUp.setVisible(false);
-            pathUp.setManaged(false);
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
