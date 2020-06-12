@@ -53,6 +53,7 @@ public class Handler {
                                     out.writeUTF("/regok");
                                     out.flush();
                                     Files.createDirectory(Paths.get("./" + createFolder));
+                                    createFile(Paths.get("./" + createFolder), tokes[1]);
                                 } else {
                                     out.writeUTF("/regerror");
                                     out.flush();
@@ -216,6 +217,12 @@ public class Handler {
                     int random_number = a + (int) (Math.random() * b); // Генерация числа
 
                     return login + random_number;
+                }
+
+                public void createFile(Path path, String login) throws IOException {
+                    FileWriter fileWriter = new FileWriter(path + "/info.txt");
+                    fileWriter.append(login + "! Добро пожаловать на облачное хранилище Cloud FreeWind!");
+                    fileWriter.close();
                 }
             }).start();
         } catch (IOException e) {
