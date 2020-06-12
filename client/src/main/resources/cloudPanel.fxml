@@ -12,6 +12,7 @@
     <HBox fx:id="isAuthPanel" visible="false" managed="false">
         <TextField fx:id="pathField" editable="false" HBox.hgrow="ALWAYS"/>
         <Button text="Вверх" onAction="#btnPathUpActionCloud"/>
+        <Button text="Выйти" onAction="#btnExitUser"/>
     </HBox>
     <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
 

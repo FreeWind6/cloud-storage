@@ -88,8 +88,8 @@ public class CloudPanelController implements Initializable {
             @Override
             public void handle(MouseEvent event) {
                 if (event.getClickCount() == 2) {
-                    Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
                     try {
+                        Path path = Paths.get(pathField.getText()).resolve(filesTable.getSelectionModel().getSelectedItem().getFilename());
                         out.writeUTF("/isDir " + path);
                         String isDir = in.readUTF();
                         if (isDir.equals("true")) {
@@ -133,6 +133,9 @@ public class CloudPanelController implements Initializable {
                         }
                     } catch (IOException | ClassNotFoundException e) {
                         Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+                        alert.showAndWait();
+                    } catch (NullPointerException e) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Ничего не выбрано!", ButtonType.OK);
                         alert.showAndWait();
                     }
                 }
@@ -263,8 +266,8 @@ public class CloudPanelController implements Initializable {
             out.flush();
             String str = in.readUTF();
             if (str.startsWith("/authok")) {
-                loginField.setText("");
-                passwordField.setText("");
+                loginField.clear();
+                passwordField.clear();
                 startList();
                 setAuthorized(true);
                 connect = true;
@@ -277,6 +280,8 @@ public class CloudPanelController implements Initializable {
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
             alert.showAndWait();
+        } catch (NullPointerException e) {
+
         }
     }
 
@@ -301,5 +306,13 @@ public class CloudPanelController implements Initializable {
         }
 
         return md5Hex;
+    }
+
+    public void btnExitUser(ActionEvent actionEvent) throws IOException {
+        out.writeUTF("/end");
+        setAuthorized(false);
+        filesTable.getItems().clear();
+        socket.close();
+        connect = false;
     }
 }
