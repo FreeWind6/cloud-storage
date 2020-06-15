@@ -323,7 +323,7 @@ public class CloudPanelController implements Initializable {
             out.flush();
             String str = in.readUTF();
             if (str.startsWith("/regok")) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "Успешная регистрация!", ButtonType.OK);
+                Alert alert = new Alert(Alert.AlertType.INFORMATION, "Успешная регистрация!", ButtonType.OK);
                 alert.showAndWait();
             } else if (str.startsWith("/regerror")) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка регестрации!", ButtonType.OK);
