@@ -1,3 +1,5 @@
+import db.HibernateUtil;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,10 +11,12 @@ public class ServerMain {
         ServerSocket server = null;
         Socket socket = null;
         Scanner scanner;
+        HibernateUtil hibernateUtil;
 
         try {
             scanner = new Scanner(System.in);
             server = new ServerSocket(8189);
+            hibernateUtil = new HibernateUtil();
 
 
             Thread t1 = new Thread(() -> {
@@ -30,7 +34,7 @@ public class ServerMain {
             while (true) {
                 socket = server.accept();
                 System.out.println("Client connect!");
-                new Handler(this, socket);
+                new Handler(this, socket, hibernateUtil);
             }
 
         } catch (IOException e) {

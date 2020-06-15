@@ -13,10 +13,10 @@ public class Handler {
     private DataInputStream in;
     private ObjectOutputStream out;
     private ServerMain server;
-    HibernateUtil hibernateUtil = new HibernateUtil();
+
     String folder;
 
-    public Handler(ServerMain server, Socket socket) {
+    public Handler(ServerMain server, Socket socket, HibernateUtil hibernateUtil) {
         try {
             this.socket = socket;
             this.server = server;
