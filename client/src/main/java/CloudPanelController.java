@@ -8,6 +8,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import java.awt.*;
 import java.io.*;
@@ -46,6 +49,11 @@ public class CloudPanelController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        File file = new File("temp.json");
+        if (file.exists()) {
+            readJsonFile("temp.json");
+            btnConnect();
+        }
         TableColumn<FileInfo, String> fileTypeColumn = new TableColumn<>();
         fileTypeColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getType().getName()));
         fileTypeColumn.setPrefWidth(24);
@@ -141,6 +149,29 @@ public class CloudPanelController implements Initializable {
                 }
             }
         });
+    }
+
+    private void readJsonFile(String fileName) {
+        // остановить перед чтением файла
+        JSONParser parser = new JSONParser();
+
+        try {
+            Object obj = parser.parse(new FileReader(fileName));
+
+            JSONObject jsonObject = (JSONObject) obj;
+
+            String login = (String) jsonObject.get("login");
+            loginField.setText(login);
+
+            String password = (String) jsonObject.get("password");
+            passwordField.setText(password);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setAuthorized(boolean isAuthorized) {
@@ -255,7 +286,7 @@ public class CloudPanelController implements Initializable {
         }
     }
 
-    public void btnConnect(ActionEvent actionEvent) {
+    public void btnConnect() {
         if (socket == null || socket.isClosed()) {
             connect();
         }
@@ -264,6 +295,7 @@ public class CloudPanelController implements Initializable {
             out.flush();
             String str = in.readUTF();
             if (str.startsWith("/authok")) {
+                createJsonFile("temp.json", loginField.getText(), passwordField.getText());
                 loginField.clear();
                 passwordField.clear();
                 startList();
@@ -312,6 +344,10 @@ public class CloudPanelController implements Initializable {
         filesTable.getItems().clear();
         socket.close();
         connect = false;
+        File file = new File("temp.json");
+        if (file.exists()) {
+            file.delete();
+        }
     }
 
     public void btnReg(ActionEvent actionEvent) throws IOException {
@@ -340,6 +376,21 @@ public class CloudPanelController implements Initializable {
             filesTable.getItems().clear();
             socket.close();
             connect = false;
+        }
+    }
+
+    private static void createJsonFile(String fileName, String login, String password) {
+        JSONObject object = new JSONObject();
+        object.put("login", login);
+        object.put("password", password);
+
+        try {
+            FileWriter file = new FileWriter(fileName);
+            file.write(object.toJSONString());
+            file.flush();
+            file.close();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }
