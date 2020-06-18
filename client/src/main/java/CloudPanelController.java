@@ -43,6 +43,7 @@ public class CloudPanelController implements Initializable {
     Socket socket;
     Boolean connect;
     String startPath;
+    Boolean useJSONFile = false;
 
     final String IP_ADPRESS = "localhost";
     final int PORT = 8189;
@@ -52,6 +53,7 @@ public class CloudPanelController implements Initializable {
         File file = new File("temp.json");
         if (file.exists()) {
             readJsonFile("temp.json");
+            useJSONFile = true;
             btnConnect();
         }
         TableColumn<FileInfo, String> fileTypeColumn = new TableColumn<>();
@@ -291,7 +293,11 @@ public class CloudPanelController implements Initializable {
             connect();
         }
         try {
-            out.writeUTF("/auth " + loginField.getText() + " " + md5Custom(passwordField.getText()));
+            if (useJSONFile) {
+                out.writeUTF("/auth " + loginField.getText() + " " + passwordField.getText());
+            } else {
+                out.writeUTF("/auth " + loginField.getText() + " " + md5Custom(passwordField.getText()));
+            }
             out.flush();
             String str = in.readUTF();
             if (str.startsWith("/authok")) {
@@ -347,6 +353,7 @@ public class CloudPanelController implements Initializable {
         File file = new File("temp.json");
         if (file.exists()) {
             file.delete();
+            useJSONFile = false;
         }
     }
 
@@ -382,7 +389,7 @@ public class CloudPanelController implements Initializable {
     private static void createJsonFile(String fileName, String login, String password) {
         JSONObject object = new JSONObject();
         object.put("login", login);
-        object.put("password", password);
+        object.put("password", md5Custom(password));
 
         try {
             FileWriter file = new FileWriter(fileName);
