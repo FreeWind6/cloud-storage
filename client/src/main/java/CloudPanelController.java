@@ -143,6 +143,9 @@ public class CloudPanelController implements Initializable {
                         }
                     } catch (IOException | ClassNotFoundException e) {
                         Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+                        loginField.clear();
+                        passwordField.clear();
+                        useJSONFile = false;
                         alert.showAndWait();
                     } catch (NullPointerException e) {
                         Alert alert = new Alert(Alert.AlertType.ERROR, "Ничего не выбрано!", ButtonType.OK);
@@ -284,6 +287,9 @@ public class CloudPanelController implements Initializable {
         } catch (IOException e) {
             setAuthorized(false);
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            loginField.clear();
+            passwordField.clear();
+            useJSONFile = false;
             alert.showAndWait();
         }
     }
@@ -313,11 +319,19 @@ public class CloudPanelController implements Initializable {
             } else if (str.startsWith("/autherror")) {
                 loginField.setText("");
                 passwordField.setText("");
+                File file = new File("temp.json");
+                if (file.exists()) {
+                    file.delete();
+                    useJSONFile = false;
+                }
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Неправильный логин/пароль!", ButtonType.OK);
                 alert.showAndWait();
             }
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            loginField.clear();
+            passwordField.clear();
+            useJSONFile = false;
             alert.showAndWait();
         } catch (NullPointerException e) {
 
@@ -377,6 +391,9 @@ public class CloudPanelController implements Initializable {
             }
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Сервер не доступен!", ButtonType.OK);
+            loginField.clear();
+            passwordField.clear();
+            useJSONFile = false;
             alert.showAndWait();
         } catch (NullPointerException e) {
 

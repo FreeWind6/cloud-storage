@@ -1,5 +1,7 @@
 package db;
 
+import com.sun.istack.NotNull;
+
 import javax.persistence.*;
 
 @Entity
@@ -10,13 +12,13 @@ public class MainDB {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "login")
+    @Column(name = "login", nullable = false)
     private String login;
 
-    @Column(name = "password")
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "folderName")
+    @Column(name = "folderName", nullable = false)
     private String folderName;
 
     public Long getId() {
