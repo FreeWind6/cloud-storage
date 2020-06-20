@@ -8,6 +8,7 @@
     <MenuBar>
         <Menu text="Файл">
             <MenuItem text="Выйти из программы" onAction="#btnExitAction"/>
+            <MenuItem text="Очистить кэш" onAction="#btnClearCache"/>
         </Menu>
     </MenuBar>
 

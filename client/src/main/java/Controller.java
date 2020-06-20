@@ -306,4 +306,17 @@ public class Controller {
             alert.showAndWait();
         }
     }
+
+    public void btnClearCache() {
+        File file = new File("temp.json");
+        if (file.exists()) {
+            file.delete();
+            CloudPanelController rightPC = (CloudPanelController) rightPanel.getProperties().get("ctrright");
+            try {
+                rightPC.useJSONFile = false;
+            } catch (Exception e) {
+                rightPC.useJSONFile = false;
+            }
+        }
+    }
 }
