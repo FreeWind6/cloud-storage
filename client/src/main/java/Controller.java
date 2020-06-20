@@ -154,7 +154,7 @@ public class Controller {
             try {
                 Path srcPath = Paths.get(leftPC.getCurrentPath(), leftPC.getSelectedFilename());
                 //удаление всего
-                new Controller().deleteFolder(new File(srcPath.toString()));
+                deleteFolder(new File(srcPath.toString()));
                 leftPC.updateList(Paths.get(leftPC.getCurrentPath()));
             } catch (Exception e) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Ошибка удаления!", ButtonType.OK);

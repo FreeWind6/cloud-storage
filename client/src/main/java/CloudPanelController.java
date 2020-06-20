@@ -301,7 +301,10 @@ public class CloudPanelController implements Initializable {
             out.flush();
             String str = in.readUTF();
             if (str.startsWith("/authok")) {
-                createJsonFile("temp.json", loginField.getText(), passwordField.getText());
+                File file = new File("temp.json");
+                if (!file.exists()) {
+                    createJsonFile("temp.json", loginField.getText(), passwordField.getText());
+                }
                 loginField.clear();
                 passwordField.clear();
                 startList();
